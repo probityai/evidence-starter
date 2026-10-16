@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install the pinned packages
+        run: python -m pip install ".[test]"
+      - name: Record a write and check a claim about it
+        run: evidence-starter "$RUNNER_TEMP/run"
+      - name: Run the tests
+        run: python -m pytest -q
+      - name: The README stays one screen and every link in it resolves
+        run: python scripts/readme-lint.py README.md
+
+  vectors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: tools/go.mod
+          cache: false
+      - name: Build the reference verifier pinned in tools/go.mod
+        run: go build -C tools -o "$GITHUB_WORKSPACE/aee-verify" github.com/probityai/agent-evidence-vectors/cmd/aee-verify
+      - name: Replay the conformance corpus against it
+        uses: probityai/agent-evidence-vectors@33d545104ff2f8c124cff465c96c013eeb809156 # v0.18.1
+        with:
+          verifier: ./aee-verify --json
