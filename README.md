@@ -1,5 +1,8 @@
 # evidence-starter
 
+[![Verified by Probity](https://raw.githubusercontent.com/probityai/agent-evidence/main/assets/verified-by-probity.svg)](https://github.com/probityai/probity)
+Verified by Probity (github.com/probityai/probity): [latest passing run](https://github.com/probityai/evidence-starter/actions/workflows/ci.yml)
+
 A template project that records a signed agent action and checks a claim about it offline, with the packages pinned and the conformance Action already in CI.
 
 It is for anyone wiring agent evidence into their own harness, evaluation pipeline or review process who wants a working base to change rather than a blank repository.
