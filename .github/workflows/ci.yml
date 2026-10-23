@@ -39,4 +39,4 @@ jobs:
       - name: Replay the conformance corpus against it
         uses: probityai/agent-evidence-vectors@473a6faf4ae290f7749940388efebbd650aaa4bc # v0.24.0
         with:
-          verifier: ./aee-verify --json
+          verifier: ./aee-verify -validity-only -json
