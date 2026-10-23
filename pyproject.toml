@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest==9.1.1"]
+test = ["pytest==9.1.1", "pyyaml==6.0.3"]
 
 [project.scripts]
 evidence-starter = "evidence_starter.demo:main"

@@ -1,14 +1,28 @@
 version: 2
+
+# One weekly pull request moves every pin together. The vectors Action in
+# ci.yml and the verifier in tools/go.mod must name the same release, and
+# separate per-ecosystem pull requests split them.
+multi-ecosystem-groups:
+  pins:
+    schedule:
+      interval: weekly
+
 updates:
   - package-ecosystem: pip
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: pins
   - package-ecosystem: github-actions
     directory: /
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: pins
   - package-ecosystem: gomod
     directory: /tools
-    schedule:
-      interval: weekly
+    patterns: ["*"]
+    multi-ecosystem-group: pins
+    # The `tool` directive records the verifier as `// indirect`, and the
+    # default allows direct dependencies only, so without this the Go pin
+    # is never bumped.
+    allow:
+      - dependency-type: all
