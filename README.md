@@ -31,11 +31,11 @@ decision: supported (assertion_matches_authenticated_history)
 | `demo` | the pins install, the example prints `supported`, the tests pass, and the README stays one screen |
 | `vectors` | builds the reference verifier pinned in [`tools/go.mod`](tools/go.mod) and replays the [agent-evidence-vectors](https://github.com/probityai/agent-evidence-vectors) corpus against it with the project's GitHub Action |
 
-To test a verifier of your own, replace the `verifier:` line in [`ci.yml`](.github/workflows/ci.yml). Dependabot keeps the PyPI pins, the Go pin and the Action pin current.
+To test a verifier of your own, replace the `verifier:` line in [`ci.yml`](.github/workflows/ci.yml). Dependabot keeps the PyPI pins, the Go pin and the Action pin current, together.
 
 ## Status
 
-Version 0.1.0. It pins `agent-evidence-observer==0.0.2`, `probity-verify==0.1.1` and the `v0.18.1` vectors release. Keys are generated per run on one host, so every record says `witnessScope: PEER`: it shows what this broker saw, not what an independent witness saw.
+Version 0.1.0. The packages are pinned in [`pyproject.toml`](pyproject.toml), the verifier in [`tools/go.mod`](tools/go.mod) and the vectors Action in [`ci.yml`](.github/workflows/ci.yml). Dependabot moves all of them in one weekly pull request, and a test fails if the Action and the verifier name different releases. Keys are generated per run on one host, so every record says `witnessScope: PEER`: it shows what this broker saw, not what an independent witness saw.
 
 ## Links
 
