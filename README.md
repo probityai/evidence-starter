@@ -22,7 +22,7 @@ recorded /work/result.txt in run
 decision: supported (assertion_matches_authenticated_history)
 ```
 
-[`demo.py`](src/evidence_starter/demo.py) has two halves. The producer uses [agent-evidence-observer](https://github.com/probityai/probity/tree/main/packages/observer): a broker writes one file, signs its history and seals a packet into `run/`. The consumer uses [probity-verify](https://github.com/probityai/probity-verify): it reads only those retained bytes and a policy pinning the two public keys, and decides whether a report about the write holds. Run it with `--claim false` and the same evidence gives `contradicted`; change a byte of `run/history.jsonl` and the verifier refuses with exit 2. `.venv/bin/python -m pytest` checks all three.
+[`demo.py`](src/evidence_starter/demo.py) has two halves. The producer uses [agent-evidence-observer](https://github.com/probityai/probity/tree/main/packages/observer): a broker writes one file, signs its history and seals a packet into `run/`. The consumer uses [probity-verify](https://github.com/probityai/probity/tree/main/packages/probity-verify): it reads only those retained bytes and a policy pinning the two public keys, and decides whether a report about the write holds. Run `.venv/bin/evidence-starter run-false --claim false` (the argument is the new directory it writes, so it must not exist yet) and the same evidence gives `contradicted`; change a byte of `run/history.jsonl` and the verifier refuses with exit 2. `.venv/bin/python -m pytest` checks all three.
 
 ## What CI runs
 
@@ -42,7 +42,7 @@ Version 0.1.0. The packages are pinned in [`pyproject.toml`](pyproject.toml), th
 | page | read it for |
 | --- | --- |
 | [Observer docs](https://github.com/probityai/probity/blob/main/packages/observer/docs/README.md) | brokered writes, workloads and the witness ledger |
-| [Brokered file write check](https://github.com/probityai/probity-verify/blob/main/docs/brokered-file-write.md) | every field of the report, case and policy this example writes |
+| [Brokered file write check](https://github.com/probityai/probity/blob/main/packages/probity-verify/docs/brokered-file-write.md) | every field of the report, case and policy this example writes |
 | [Vectors CI guide](https://github.com/probityai/agent-evidence-vectors/blob/main/docs/guides/runner.md) | Action inputs, outputs and how to read the report |
 | [Verifier contract](https://github.com/probityai/agent-evidence-vectors/blob/main/docs/reference/verifier-contract.md) | what your verifier must print for the corpus |
 
