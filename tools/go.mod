@@ -9,4 +9,4 @@ go 1.24
 
 tool github.com/probityai/agent-evidence-vectors/cmd/aee-verify
 
-require github.com/probityai/agent-evidence-vectors v0.24.0 // indirect
+require github.com/probityai/agent-evidence-vectors v0.29.3 // indirect
