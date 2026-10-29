@@ -6,8 +6,9 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
-    "agent-evidence-observer==0.1.0",
-    "probity-verify==0.1.1",
+    "agent-evidence-observer==0.1.1",
+    "probity-verify==0.2.2",
+    "probityai==0.1.0",
 ]
 
 [project.optional-dependencies]

@@ -37,6 +37,6 @@ jobs:
       - name: Build the reference verifier pinned in tools/go.mod
         run: go build -C tools -o "$GITHUB_WORKSPACE/aee-verify" github.com/probityai/agent-evidence-vectors/cmd/aee-verify
       - name: Replay the conformance corpus against it
-        uses: probityai/agent-evidence-vectors@473a6faf4ae290f7749940388efebbd650aaa4bc # v0.24.0
+        uses: probityai/agent-evidence-vectors@a78eb265ece4163e5d4e08eb5865fac05d12cab0 # v0.29.3
         with:
           verifier: ./aee-verify -validity-only -json
