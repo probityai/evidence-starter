@@ -1,0 +1,20 @@
+# Where each version this repository's pages name is decided; scripts/version-pins.py
+# holds every page to it. A release bumps pyproject.toml and runs
+# `python3 scripts/version-pins.py write` in the same pull request.
+repository = "probityai/evidence-starter"
+
+# This repository is a template: it is copied, never published to a registry.
+[[own]]
+key = "github:evidence-starter"
+manifest = "pyproject.toml"
+pages = ["README.md"]
+released = false
+
+# Packages other repositories release that a page here names. Dependabot moves the
+# pins in pyproject.toml; this lock covers the pages, and the registry check reports
+# when it falls behind.
+[family]
+"pypi:probity-verify" = "0.2.4"
+"pypi:agent-evidence-observer" = "0.1.1"
+"pypi:probityai" = "0.1.0"
+"action:agent-evidence-vectors" = "0.30.0"

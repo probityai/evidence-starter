@@ -25,6 +25,10 @@ jobs:
         run: python -m pytest -q
       - name: The README stays one screen and every link in it resolves
         run: python scripts/readme-lint.py README.md
+      - name: Every version a page names equals its manifest or the family lock
+        run: |
+          python scripts/version-pins.py check
+          python scripts/version-pins-test.py
 
   vectors:
     runs-on: ubuntu-latest
