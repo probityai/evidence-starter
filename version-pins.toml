@@ -14,7 +14,7 @@ released = false
 # pins in pyproject.toml; this lock covers the pages, and the registry check reports
 # when it falls behind.
 [family]
-"pypi:probity-verify" = "0.2.4"
+"pypi:probity-verify" = "0.3.0"
 "pypi:agent-evidence-observer" = "0.1.1"
 "pypi:probityai" = "0.1.0"
-"action:agent-evidence-vectors" = "0.30.0"
+"action:agent-evidence-vectors" = "0.31.0"
