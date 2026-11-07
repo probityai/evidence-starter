@@ -30,7 +30,11 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: probityai/.github/actions/pin-refresh@ca2ba06de3bc0fb385e81a338873cbf26a3eaaf5 # main
+        with:
+          # A persisted checkout credential plus the token push makes GitHub refuse the push
+          # with HTTP 400 ("Duplicate header"), which left the family lock stale.
+          persist-credentials: false
+      - uses: probityai/.github/actions/pin-refresh@51b22165cc1ec20ce7b905380c589534fc920079 # main
         with:
           ci: ci.yml
           token: ${{ github.token }}
