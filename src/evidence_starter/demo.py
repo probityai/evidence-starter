@@ -1,7 +1,7 @@
 """Record one brokered file write, then check a claim about it offline.
 
 The producer half uses agent-evidence-observer: a broker performs the write,
-signs a history and seals a packet. The consumer half uses probity-verify: it
+signs a history and seals a packet. The consumer half uses agent-evidence-verify: it
 reads only the retained bytes and a policy the consumer wrote, and decides
 whether a report about the write holds.
 """
@@ -78,8 +78,8 @@ def write_claim(run: Path, pins: dict[str, object], completion_recorded: bool) -
 
 
 def verify(case: Path, policy: Path) -> dict[str, object]:
-    """Run the probity-verify CLI on the retained bytes and return its JSON decision."""
-    result = subprocess.run([sys.executable, "-m", "probity_verify.cli", str(case), "--policy", str(policy), "--json"],
+    """Run the agent-evidence-verify CLI on the retained bytes and return its JSON decision."""
+    result = subprocess.run([sys.executable, "-m", "agent_evidence_verify.cli", str(case), "--policy", str(policy), "--json"],
                             capture_output=True, check=True, text=True)
     decision: dict[str, object] = json.loads(result.stdout)
     return decision

@@ -45,3 +45,11 @@ def test_dependabot_moves_both_pins_together() -> None:
     assert verifier["multi-ecosystem-group"] in config["multi-ecosystem-groups"]
     # The verifier is an indirect requirement; Dependabot skips those by default.
     assert {"dependency-type": "all"} in verifier["allow"]
+
+
+def test_python_verifier_is_pinned_exactly_and_dependabot_watches_it() -> None:
+    pyproject = (ROOT / "pyproject.toml").read_text()
+    assert re.search(r'^\s*"agent-evidence-verify==\d+\.\d+\.\d+",$', pyproject, re.MULTILINE)
+    config = yaml.safe_load((ROOT / ".github/dependabot.yml").read_text())
+    ecosystems = {entry["package-ecosystem"] for entry in config["updates"]}
+    assert "pip" in ecosystems
