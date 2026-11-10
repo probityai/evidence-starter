@@ -33,11 +33,11 @@ jobs:
       - name: The README stays one screen and every link in it resolves
         run: python scripts/readme-lint.py README.md
       - name: Every version a page names equals its manifest or the family lock
-        uses: probityai/.github/actions/version-pins@27c2b8a1dc13ce58e47b020c7300c9196d6a6dd7 # main
+        uses: probityai/.github/actions/version-pins@254c480fa2f8fe086de36fcee1b8d17df731b6b9 # main
         with:
           command: check
       - name: A planted stale pin turns the version check red
-        uses: probityai/.github/actions/version-pins@27c2b8a1dc13ce58e47b020c7300c9196d6a6dd7 # main
+        uses: probityai/.github/actions/version-pins@254c480fa2f8fe086de36fcee1b8d17df731b6b9 # main
         with:
           command: test
 
