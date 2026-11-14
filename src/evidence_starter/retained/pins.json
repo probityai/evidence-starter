@@ -1,0 +1,12 @@
+{
+  "authority": {
+    "intervalId": "starter-run",
+    "operation": "write-file",
+    "scope": "/work"
+  },
+  "content_sha256": "93e274fe9e66f9cb5ca4dbd868824b991cefb82455e6d1177d7d17e59fd96162",
+  "observer_key": "943de5ad72b01aa4f27d63bba6010b09dd2c7fc136c6632c2a72a0f95475cacc",
+  "path": "/work/result.txt",
+  "request_id": "write-1",
+  "witness_key": "5d438b42ab7dfe77a4455776c09fac983b2c54c06323013bb99f7ba10494aea9"
+}

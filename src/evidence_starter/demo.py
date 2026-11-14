@@ -1,9 +1,12 @@
-"""Record one brokered file write, then check a claim about it offline.
+"""Check a claim about one retained agent file write, offline.
 
-The producer half uses agent-evidence-observer: a broker performs the write,
-signs a history and seals a packet. The consumer half uses agent-evidence-verify: it
-reads only the retained bytes and a policy the consumer wrote, and decides
-whether a report about the write holds.
+The evidence is a signed history, a witness ledger, a witness head and a sealed
+packet that an operator's runtime wrote and that this template keeps under
+``retained/``, next to the two public keys a consumer pins. This module is the
+consumer half: it copies those retained bytes into a run directory, writes a
+report about the write and a policy of the consumer's own, and asks
+agent-evidence-verify whether the report holds. The packages that produce such
+records are not part of this template; the decision rests only on the bytes.
 """
 
 from __future__ import annotations
@@ -11,38 +14,30 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-from probity_observer.broker import Broker
-from probity_observer.crypto import SigningKey, canonical
-from probity_observer.ledger import LedgerWitness
+from probity_observer.crypto import canonical
 
-REQUEST_ID = "write-1"
-TARGET = "/work/result.txt"
-CONTENT = b"hello from the agent\n"
+RETAINED = Path(__file__).resolve().parent / "retained"
+EVIDENCE = ("packet.json", "history.jsonl", "ledger.jsonl", "head.json")
+PINS = json.loads((RETAINED / "pins.json").read_text())
+REQUEST_ID = PINS["request_id"]
+TARGET = PINS["path"]
 
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def record(run: Path) -> dict[str, object]:
-    """Run one write through the broker and keep the signed evidence in ``run``."""
+def retain(run: Path) -> dict[str, object]:
+    """Copy the retained evidence into a new ``run`` directory and return what the consumer pins."""
     run.mkdir(parents=True, exist_ok=False)
-    (run / "work").mkdir()
-    observer_key, witness_key = SigningKey.generate(), SigningKey.generate()
-    authority = {"intervalId": "starter-run", "scope": "/work", "operation": "write-file"}
-    witness = LedgerWitness(run / "ledger.jsonl", witness_key, observer_key.public_hex)
-    broker = Broker(run / "work", run / "history.jsonl", authority, observer_key, witness)
-    broker.begin()
-    broker.write(REQUEST_ID, TARGET, CONTENT)
-    (run / "packet.json").write_bytes(canonical(broker.seal()))
-    (run / "head.json").write_bytes(canonical(witness.signed_head()))
-    # What the consumer pins out of band: the two public keys and the request.
-    return {"observer_key": observer_key.public_hex, "witness_key": witness_key.public_hex,
-            "authority": authority, "content_sha256": hashlib.sha256(CONTENT).hexdigest()}
+    for name in EVIDENCE:
+        shutil.copyfile(RETAINED / name, run / name)
+    return dict(PINS)
 
 
 def write_claim(run: Path, pins: dict[str, object], completion_recorded: bool) -> tuple[Path, Path]:
@@ -91,9 +86,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--claim", choices=("true", "false"), default="true",
                         help="what the report says about the write (default: true)")
     args = parser.parse_args(argv)
-    pins = record(args.run)
+    pins = retain(args.run)
     decision = verify(*write_claim(args.run, pins, args.claim == "true"))
-    print(f"recorded {TARGET} in {args.run}")
+    print(f"retained {TARGET} in {args.run}")
     print(f"decision: {decision['decision']} ({decision['reason']})")
     return 0 if decision["decision"] == "supported" else 1
 
