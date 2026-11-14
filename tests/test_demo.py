@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from evidence_starter.demo import main, record, verify, write_claim
+from evidence_starter.demo import main, retain, verify, write_claim
 
 
 def test_true_report_is_supported(tmp_path: Path) -> None:
@@ -12,13 +12,13 @@ def test_true_report_is_supported(tmp_path: Path) -> None:
 
 def test_false_report_is_contradicted(tmp_path: Path) -> None:
     run = tmp_path / "run"
-    decision = verify(*write_claim(run, record(run), completion_recorded=False))
+    decision = verify(*write_claim(run, retain(run), completion_recorded=False))
     assert decision["decision"] == "contradicted"
 
 
 def test_tampered_history_is_refused(tmp_path: Path) -> None:
     run = tmp_path / "run"
-    case, policy = write_claim(run, record(run), completion_recorded=True)
+    case, policy = write_claim(run, retain(run), completion_recorded=True)
     history = run / "history.jsonl"
     history.write_bytes(history.read_bytes().replace(b"write-1", b"write-2"))
     with pytest.raises(subprocess.CalledProcessError) as refused:
