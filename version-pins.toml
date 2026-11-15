@@ -16,4 +16,4 @@ released = false
 [family]
 "pypi:agent-evidence-verify" = "0.5.1"
 "pypi:agent-evidence-observer" = "0.2.0"
-"action:agent-evidence-vectors" = "0.36.3"
+"action:agent-evidence-vectors" = "0.37.0"
