@@ -6,7 +6,9 @@ The expectation goes into the case set, so the case set's digest binds it, and
 a consumer that pins that digest refuses a record built from a table with one
 expectation flipped. A case reaches `passed` when its outcome equals its
 expectation and `failed` when it differs; a case with no outcome is recorded
-as not run, never dropped.
+as not run, never dropped. A table whose header, column count or expectations
+fall outside this contract, an outcome for a case the table does not hold, and
+an outcome file with a duplicate member are refused, never silently left out.
 
 The record is the `evaluation-claim` predicate of agent-evidence-vectors,
 wrapped in an in-toto Statement and signed as a DSSE envelope with Ed25519.
@@ -29,6 +31,8 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey,
 
 HERE = Path(__file__).resolve().parent
 PAYLOAD_TYPE = "application/vnd.in-toto+json"
+HEADER = ["id", "requirement", "expect"]
+EXPECTATIONS = frozenset({"verified", "falsified", "pass", "fail"})
 
 
 def pae(payload_type: str, payload: bytes) -> bytes:
@@ -41,12 +45,39 @@ def sha256_ref(name: str, path: Path) -> dict[str, str]:
     return {"name": name, "digest": "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
+def read_table(table: Path) -> list[list[str]]:
+    """Read the expectation table, refusing anything outside its contract."""
+    header, *lines = table.read_text().splitlines()
+    if header.split("\t") != HEADER:
+        raise ValueError(f"{table.name}: header must be {'<TAB>'.join(HEADER)}")
+    rows = [line.split("\t") for line in lines if line]
+    for row in rows:
+        if len(row) != len(HEADER) or row[2] not in EXPECTATIONS:
+            raise ValueError(f"{table.name}: row {row!r} needs three columns and an expectation in {sorted(EXPECTATIONS)}")
+    return rows
+
+
+def read_outcomes(observed: Path, ids: list[str]) -> dict[str, str]:
+    """Read a run's outcomes; a duplicate member or a case the table does not hold is refused."""
+    def unique(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        if len({key for key, _ in pairs}) != len(pairs):
+            raise ValueError(f"{observed.name}: duplicate member")
+        return dict(pairs)
+    outcome = json.loads(observed.read_text(), object_pairs_hook=unique)
+    if not isinstance(outcome, dict) or not all(isinstance(v, str) for v in outcome.values()):
+        raise ValueError(f"{observed.name}: must map each case id to an outcome string")
+    unknown = sorted(set(outcome) - set(ids))
+    if unknown:
+        raise ValueError(f"{observed.name}: outcomes for cases the table does not hold: {unknown}")
+    return outcome
+
+
 def build(table: Path, observed: Path, *, implementation: Path, verifier: Path) -> tuple[dict, dict]:
     """Return the case set and the unsigned record."""
-    rows = [line.split("\t") for line in table.read_text().splitlines()[1:] if line]
+    rows = read_table(table)
     case_set = {"schema": "aev-claim-case-set/v1", "name": table.stem, "revision": "1",
                 "cases": [{"id": i, "requirement": r, "expect": e} for i, r, e in rows]}
-    outcome = json.loads(observed.read_text())
+    outcome = read_outcomes(observed, [i for i, _, _ in rows])
     results = {"passed": [i for i, _, e in rows if outcome.get(i) == e],
                "failed": [i for i, _, e in rows if i in outcome and outcome[i] != e]}
     profile = check_profile(json.loads((PACKAGED_CORPUS / "profiles/conformance.json").read_text()))

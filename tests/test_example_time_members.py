@@ -64,3 +64,58 @@ def test_block_time_allowance_boundary() -> None:
     assert timing.check(_record(anchor__anchoredAt="2026-11-15T13:00:09Z"))["entry"] == "well-formed"
     assert timing.check(_record(anchor__anchoredAt="2026-11-15T13:00:10Z"))["code"] == "entry-anchor-late"
     assert timing.check(_record(anchor__blockTime=False))["code"] == "entry-anchor-late"
+
+
+def test_duplicate_input_name_is_refused_not_overwritten() -> None:
+    """Counter-example: a stale reading listed first and a fresh one with the same name used to report fresh."""
+    record = _record()
+    record["inputs"].insert(0, {"input": "account-standing", "lastResult": "2026-11-14T00:00:00Z", "maxAge": 60})
+    assert timing.check(record) == {"entry": "malformed", "code": "duplicate-input"}
+
+
+def test_duplicate_json_member_is_refused(tmp_path) -> None:
+    text = (EXAMPLES / "time_members/record.json").read_text().replace('"maxAge": 7200', '"maxAge": 60, "maxAge": 7200')
+    path = tmp_path / "record.json"
+    path.write_text(text)
+    with pytest.raises(ValueError, match="duplicate-member"):
+        timing.load(text)
+    assert timing.main(["check_time.py", str(path)]) == 1
+
+
+@pytest.mark.parametrize("value", ["false", "true", 0, 1, None])
+def test_block_time_must_be_a_boolean(value) -> None:
+    """Counter-example: the string "false" is truthy, so a log anchor three hours late took the block-time allowance."""
+    assert timing.check(_record(anchor__blockTime=value)) == {"entry": "malformed", "code": "blockTime-not-bool"}
+
+
+@pytest.mark.parametrize("value", ["20261115T080000Z", "2026-W46-7T08Z", "2026-11-15 08:00:00Z", "2026-11-15T08Z",
+                                   "2026-11-15T08:00:00+00:00", "2026-02-30T08:00:00Z",
+                                   "\u0662\u0660\u0662\u0666-11-15T08:00:00Z"])
+def test_only_rfc3339_utc_times_are_read(value) -> None:
+    assert timing.check(_record(inputs__0__lastResult=value)) == {"entry": "malformed", "code": "not-rfc3339"}
+
+
+def test_issued_at_is_checked() -> None:
+    assert timing.check(_record(issuedAt="yesterday")) == {"entry": "malformed", "code": "not-rfc3339"}
+    record = _record()
+    del record["issuedAt"]
+    assert timing.check(record) == {"entry": "malformed", "code": "missing-issuedAt"}
+
+
+@pytest.mark.parametrize("change, code", [
+    ({"decision__reportedAt": "noon"}, "not-rfc3339"),
+    ({"decision": "reportedAt"}, "missing-reported-at"),
+    ({"inputs": {"input": "a"}}, "inputs-not-list"),
+    ({"anchor__anchorWithin": 3600.0}, "anchorWithin-not-int"),
+])
+def test_malformed_members_get_a_code_not_a_crash(change, code) -> None:
+    assert timing.check(_record(**change)) == {"entry": "malformed", "code": code}
+
+
+def test_missing_members_get_a_code_not_a_crash() -> None:
+    record = _record()
+    del record["inputs"][0]["maxAge"]
+    assert timing.check(record) == {"entry": "malformed", "code": "missing-maxAge"}
+    record = _record()
+    del record["anchor"]["blockTime"]
+    assert timing.check(record) == {"entry": "malformed", "code": "missing-blockTime"}
