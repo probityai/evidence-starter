@@ -45,6 +45,8 @@ Version 0.1.0. The packages are pinned in [`pyproject.toml`](pyproject.toml), th
 | [Brokered file write check](https://github.com/probityai/probity/blob/main/packages/probity-verify/docs/brokered-file-write.md) | every field of the report, case and policy this example writes |
 | [Vectors CI guide](https://github.com/probityai/agent-evidence-vectors/blob/main/docs/guides/runner.md) | Action inputs, outputs and how to read the report |
 | [Verifier contract](https://github.com/probityai/agent-evidence-vectors/blob/main/docs/reference/verifier-contract.md) | what your verifier must print for the corpus |
+| [Evaluation claim example](examples/evaluation_claim/README.md) | turn an expectation table and a run into a signed claim record |
+| [Time members example](examples/time_members/README.md) | the time fields a record carries, with asymmetric freshness bounds |
 
 ## License
 
