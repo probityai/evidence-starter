@@ -1,0 +1,4 @@
+// The artifact under evaluation. Replace this file with your own model, build or
+// binary: its SHA-256 becomes the record's implementation digest and the subject
+// of the signed Statement.
+theory Sample begin end

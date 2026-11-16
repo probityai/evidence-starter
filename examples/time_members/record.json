@@ -1,0 +1,10 @@
+{
+  "issuedAt": "2026-11-15T10:00:09Z",
+  "decision": {"reportedAt": "2026-11-15T10:00:00Z"},
+  "inputs": [
+    {"input": "account-standing", "lastResult": "2026-11-15T08:00:00Z", "maxAge": 7200},
+    {"input": "policy-version", "lastResult": "2026-11-15T10:04:00Z", "maxAge": 60}
+  ],
+  "anchor": {"dueFrom": "2026-11-15T10:00:09Z", "anchoredAt": "2026-11-15T12:59:00Z",
+             "anchorWithin": 3600, "blockTime": true}
+}
