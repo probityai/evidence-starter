@@ -21,8 +21,11 @@ an in-toto Statement, sign it as a DSSE envelope. Because the expectation sits
 inside the case set, the case set's digest binds it: a consumer that pins that
 digest in its acceptance rule refuses a record built after one expectation was
 flipped (`CASE_SET_NOT_ACCEPTED`), so a regression cannot be relabelled as the
-expected result. A case with no outcome is recorded as not run, never dropped.
+expected result. A case with no outcome is recorded as not run, never dropped. The table header
+must be `id`, `requirement`, `expect` and every expectation one of the four
+above; an outcome for a case the table does not hold, or an outcome file with a
+duplicate member, is refused rather than left out.
 
 The record says how the run fared against the table. It does not re-run the
 cases or say who observed the run; pin the signer's key and keep the case set
-you accept. `tests/test_examples.py` checks both refusals.
+you accept. `tests/test_example_evaluation_claim.py` checks every refusal.

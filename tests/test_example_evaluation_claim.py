@@ -97,3 +97,28 @@ def test_missing_outcome_is_not_run(tmp_path: Path) -> None:
                             implementation=CLAIM_DIR / "model.spthy", verifier=CLAIM_DIR / "make_claim.py")
     assert record["coordinates"]["population"]["not_run"] == ["refresh-token-rotates"]
     assert record["verdict"] == "incomplete"
+
+
+def _write(path: Path, text: str) -> Path:
+    path.write_text(text)
+    return path
+
+
+@pytest.mark.parametrize("table, observed, message", [
+    # An outcome for a case the table does not hold: renaming a failing case would leave the original not run
+    # and hide the failure under a name nobody reads, so it is refused instead of dropped.
+    (None, '{"auth-code-binds-client": "verified", "refresh-token-rotates": "verified", '
+           '"token-replay-across-servers": "falsified", "consent-skipped-on-reauth": "falsified", '
+           '"token-replay-across-servers-v2": "verified"}', "does not hold"),
+    # Two readers keep different copies of a duplicate member.
+    (None, '{"auth-code-binds-client": "falsified", "auth-code-binds-client": "verified"}', "duplicate member"),
+    (None, '{"auth-code-binds-client": null}', "outcome string"),
+    ("id\trequirement\texpect\nx\trequired\tverifed\n", '{"x": "verifed"}', "expectation in"),
+    ("id\texpect\trequirement\nx\tverified\trequired\n", '{"x": "verified"}', "header must be"),
+    ("id\trequirement\texpect\nx\trequired\tverified\textra\n", '{"x": "verified"}', "three columns"),
+])
+def test_table_and_outcome_contract_refusals(tmp_path: Path, table: str | None, observed: str, message: str) -> None:
+    table_path = CLAIM_DIR / "expectations.tsv" if table is None else _write(tmp_path / "t.tsv", table)
+    with pytest.raises(ValueError, match=message):
+        claim.build(table_path, _write(tmp_path / "observed.json", observed),
+                    implementation=CLAIM_DIR / "model.spthy", verifier=CLAIM_DIR / "make_claim.py")
