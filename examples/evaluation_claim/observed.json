@@ -1,0 +1,6 @@
+{
+  "auth-code-binds-client": "verified",
+  "refresh-token-rotates": "verified",
+  "token-replay-across-servers": "falsified",
+  "consent-skipped-on-reauth": "falsified"
+}

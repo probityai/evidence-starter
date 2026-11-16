@@ -1,0 +1,5 @@
+id	requirement	expect
+auth-code-binds-client	required	verified
+refresh-token-rotates	required	verified
+token-replay-across-servers	required	falsified
+consent-skipped-on-reauth	optional	falsified
