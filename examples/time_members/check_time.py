@@ -12,6 +12,12 @@ explicitly. The rules this checker applies, each a one-line function:
   clock-skew tolerance only, so a `lastResult` more than the skew after
   `reportedAt` is malformed rather than fresh;
 - a `lastResult` of `none` is never established;
+- every time is RFC 3339 UTC written `YYYY-MM-DDTHH:MM:SS[.fraction]Z` with ASCII
+  digits; the other ISO 8601 forms a general parser takes (basic, week dates,
+  hour only) are refused, because another reader would refuse them;
+- the record is parsed with duplicate members refused, every member a rule reads
+  must be present with its type (`blockTime` a boolean, never a truthy string),
+  and two inputs with one name are refused rather than the last one kept;
 - an anchor (a transparency-log entry or a block time) counts only when it lands
   no later than `anchorWithin` plus its allowance after the time the anchor is
   due from; a block-time anchor takes the block-time allowance, a log anchor the
@@ -23,6 +29,7 @@ explicitly. The rules this checker applies, each a one-line function:
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -31,12 +38,33 @@ from typing import Any
 SAFE = 2**53 - 1
 SKEW_SECONDS = 300
 BLOCK_TIME_ALLOWANCE_SECONDS = 7200
+RFC3339_UTC = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]+)?Z")
 
 
-def instant(value: str) -> datetime:
-    if not isinstance(value, str) or not value.endswith("Z"):
-        raise ValueError(f"not an RFC 3339 UTC time: {value!r}")
-    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+def load(text: str) -> Any:
+    """Parse JSON with duplicate members refused: two readers keep different copies of one."""
+    def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        if len({key for key, _ in pairs}) != len(pairs):
+            raise ValueError("duplicate-member")
+        return dict(pairs)
+    return json.loads(text, object_pairs_hook=unique)
+
+
+def instant(value: Any) -> datetime:
+    if not isinstance(value, str) or not RFC3339_UTC.fullmatch(value):
+        raise ValueError("not-rfc3339")
+    try:
+        return datetime.fromisoformat(value[:-1] + "+00:00")
+    except ValueError:
+        raise ValueError("not-rfc3339") from None
+
+
+def member(holder: Any, name: str, kind: type) -> Any:
+    if not isinstance(holder, dict) or name not in holder:
+        raise ValueError(f"missing-{name}")
+    if type(holder[name]) is not kind:
+        raise ValueError(f"{name}-not-{kind.__name__}")
+    return holder[name]
 
 
 def safe_integer(value: Any) -> int:
@@ -49,8 +77,10 @@ def safe_integer(value: Any) -> int:
 
 def freshness(entry: dict, reported_at: datetime, skew: int = SKEW_SECONDS) -> str:
     """Return fresh, stale, not-established, or raise ValueError with a code."""
+    if not isinstance(entry, dict) or "maxAge" not in entry:
+        raise ValueError("missing-maxAge")
     max_age = safe_integer(entry["maxAge"])
-    if entry["lastResult"] == "none":
+    if member(entry, "lastResult", str) == "none":
         return "not-established"
     age = (reported_at - instant(entry["lastResult"])).total_seconds()
     if age < -skew:
@@ -64,24 +94,49 @@ def anchor_on_time(due_from: str, anchored_at: str, anchor_within: int, *, block
     return late_by <= allowance
 
 
-def check(record: dict) -> dict[str, Any]:
+def judge_inputs(entries: Any, reported_at: datetime) -> dict[str, str]:
+    if not isinstance(entries, list):
+        raise ValueError("inputs-not-list")
+    verdicts: dict[str, str] = {}
+    for entry in entries:
+        name = member(entry, "input", str)
+        if name in verdicts:
+            raise ValueError("duplicate-input")
+        verdicts[name] = freshness(entry, reported_at)
+    return verdicts
+
+
+def judge_anchor(anchor: Any) -> None:
+    if anchor is None:
+        return
+    on_time = anchor_on_time(member(anchor, "dueFrom", str), member(anchor, "anchoredAt", str),
+                             member(anchor, "anchorWithin", int), block_time=member(anchor, "blockTime", bool))
+    if not on_time:
+        raise ValueError("entry-anchor-late")
+
+
+def check(record: Any) -> dict[str, Any]:
     """Judge every time member of a record shaped like `record.json`."""
-    if "reportedAt" not in record.get("decision", {}):
-        return {"entry": "malformed", "code": "missing-reported-at"}
-    reported_at = instant(record["decision"]["reportedAt"])
     try:
-        inputs = {e["input"]: freshness(e, reported_at) for e in record["inputs"]}
-        anchor = record.get("anchor")
-        if anchor is not None and not anchor_on_time(anchor["dueFrom"], anchor["anchoredAt"],
-                                                     anchor["anchorWithin"], block_time=anchor["blockTime"]):
-            return {"entry": "malformed", "code": "entry-anchor-late"}
+        if not isinstance(record, dict):
+            raise ValueError("record-not-object")
+        if not isinstance(record.get("decision"), dict) or "reportedAt" not in record["decision"]:
+            return {"entry": "malformed", "code": "missing-reported-at"}
+        reported_at = instant(record["decision"]["reportedAt"])
+        instant(member(record, "issuedAt", str))
+        inputs = judge_inputs(member(record, "inputs", list), reported_at)
+        judge_anchor(record.get("anchor"))
     except ValueError as refusal:
         return {"entry": "malformed", "code": str(refusal)}
     return {"entry": "well-formed", "inputs": inputs}
 
 
 def main(argv: list[str]) -> int:
-    result = check(json.loads(Path(argv[1]).read_text()))
+    try:
+        result = check(load(Path(argv[1]).read_text()))
+    except ValueError as refusal:
+        code = "duplicate-member" if str(refusal) == "duplicate-member" else "not-json"
+        result = {"entry": "malformed", "code": code}
     print(json.dumps(result, sort_keys=True))
     return 0 if result["entry"] == "well-formed" else 1
 

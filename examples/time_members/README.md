@@ -13,6 +13,13 @@ the rules below and prints one verdict.
 | `anchor.anchorWithin` | how soon an independent anchor must land | late by more than the allowance is `entry-anchor-late` |
 | skew tolerance | clock disagreement allowed | 300 seconds, on the future side only |
 | block-time allowance | a block time's own slack | 7200 seconds for a block-time anchor, in place of the skew |
+| `anchor.blockTime` | which allowance applies | a JSON boolean; a string such as `"false"` is malformed, never truthy |
+
+Every time is written `YYYY-MM-DDTHH:MM:SS[.fraction]Z` with ASCII digits; the
+basic, week-date and hour-only forms a general ISO 8601 parser takes are
+`not-rfc3339`. The record is parsed with duplicate members refused, a missing
+member is reported by name (`missing-maxAge`), and two inputs with one name are
+`duplicate-input` rather than the last one kept.
 
 The bounds are asymmetric on purpose: the past side is `maxAge`, the future
 side is the skew alone, so a reading from the future cannot be stretched into
