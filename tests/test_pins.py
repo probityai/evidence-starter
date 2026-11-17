@@ -52,4 +52,7 @@ def test_python_verifier_is_pinned_exactly_and_dependabot_watches_it() -> None:
     assert re.search(r'^\s*"agent-evidence-verify==\d+\.\d+\.\d+",$', pyproject, re.MULTILINE)
     config = yaml.safe_load((ROOT / ".github/dependabot.yml").read_text())
     ecosystems = {entry["package-ecosystem"] for entry in config["updates"]}
-    assert "pip" in ecosystems
+    # uv, not pip: the uv ecosystem moves pyproject.toml and uv.lock together, so the lock job
+    # in ci.yml stays green on a bump; a pip entry would leave uv.lock behind.
+    assert "uv" in ecosystems
+    assert "pip" not in ecosystems
