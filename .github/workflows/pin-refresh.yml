@@ -34,7 +34,8 @@ jobs:
           # A persisted checkout credential plus the token push makes GitHub refuse the push
           # with HTTP 400 ("Duplicate header"), which left the family lock stale.
           persist-credentials: false
-      - uses: probityai/.github/actions/pin-refresh@254c480fa2f8fe086de36fcee1b8d17df731b6b9 # main
+      - uses: probityai/.github/actions/pin-refresh@449849e49f23d5c9a3e2422bb8366aac738dd076 # main
         with:
           ci: ci.yml
-          token: ${{ github.token }}
+          app-client-id: ${{ vars.PIN_REFRESH_APP_CLIENT_ID }}
+          app-private-key: ${{ secrets.PIN_REFRESH_APP_PRIVATE_KEY }}
