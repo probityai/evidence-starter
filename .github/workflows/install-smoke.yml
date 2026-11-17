@@ -59,26 +59,36 @@ jobs:
         run: python -m pytest -q
 
   # A nightly failure would otherwise reach only whoever last edited the cron line. Keep one
-  # open issue instead, found by listing open issues (the search index lags a new issue).
-  report-failure:
+  # issue that is open exactly while the nightly run fails: a failure opens it or adds the run,
+  # the next green nightly closes it, so an open issue always means "failing now". It is found
+  # by listing open issues (the search index lags a new issue).
+  report:
     needs: install
-    if: failure() && github.event_name == 'schedule'
+    if: always() && github.event_name == 'schedule' && contains(fromJSON('["success", "failure"]'), needs.install.result)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       contents: read
       issues: write
     steps:
-      - name: Open or update the tracking issue
+      - name: Open, update or close the tracking issue
         env:
           GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ needs.install.result }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
           title="Nightly install smoke test is failing"
-          existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
-            --jq ".[] | select(.pull_request == null and .title == \"$title\") | .number" | head -n 1)
-          if [ -n "$existing" ]; then
+          # All matches first, then the first line: piping into head under pipefail can fail
+          # the step when head closes the pipe early.
+          found=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            --jq ".[] | select(.pull_request == null and .title == \"$title\") | .number")
+          existing=${found%%$'\n'*}
+          if [ "$RESULT" = success ]; then
+            if [ -n "$existing" ]; then
+              gh issue close "$existing" -R "$GITHUB_REPOSITORY" --comment "Passing again: $RUN_URL"
+            fi
+          elif [ -n "$existing" ]; then
             gh issue comment "$existing" -R "$GITHUB_REPOSITORY" --body "Still failing: $RUN_URL"
           else
             gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "A fresh pip install of this template, with no lock file, failed: $RUN_URL. The \"Record what resolved\" step lists the versions it got; an upstream release usually caused it."
