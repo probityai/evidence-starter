@@ -41,6 +41,28 @@ jobs:
         with:
           command: test
 
+  # The hash-locked set: uv.lock must match pyproject.toml, and the example and the tests
+  # pass on exactly the versions it records. `demo` above installs the way the README says,
+  # resolving fresh, and install-smoke.yml does the same nightly.
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: uv.lock matches pyproject.toml
+        run: uv lock --check
+      - name: Install exactly the locked versions
+        run: uv sync --locked --extra test --python 3.12
+      - name: The example prints supported on the locked set
+        run: |
+          set -euo pipefail
+          uv run --locked --no-sync evidence-starter "$RUNNER_TEMP/run" | tee "$RUNNER_TEMP/out.txt"
+          grep -q '^decision: supported ' "$RUNNER_TEMP/out.txt"
+      - name: The tests pass on the locked set
+        run: uv run --locked --no-sync python -m pytest -q
+
   vectors:
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +83,7 @@ jobs:
   # by path selection.
   ci-ok:
     if: always()
-    needs: [demo, vectors]
+    needs: [demo, lock, vectors]
     runs-on: ubuntu-latest
     steps:
       - name: Every selected job passed

@@ -1,0 +1,21 @@
+# evidence-starter
+
+> A template project that checks a claim about a retained, signed agent action offline, with the packages pinned and the conformance Action already in CI.
+
+Install with `pip install ".[test]"` (Python 3.12 or later), run `evidence-starter run`, and the verifier decides from the retained bytes alone whether the report holds. uv.lock holds the hash-locked set CI tests.
+
+## Start
+
+- [README](https://github.com/probityai/evidence-starter/blob/main/README.md): what the template does, the 30-second example and what CI runs
+- [demo.py](https://github.com/probityai/evidence-starter/blob/main/src/evidence_starter/demo.py): the consumer half of agent evidence, end to end
+- [retained/](https://github.com/probityai/evidence-starter/tree/main/src/evidence_starter/retained): the signed history, witness ledger, head, packet and pinned keys
+
+## Examples
+
+- [Evaluation claim](https://github.com/probityai/evidence-starter/blob/main/examples/evaluation_claim/README.md): turn an expectation table and a run into a signed claim record
+- [Time members](https://github.com/probityai/evidence-starter/blob/main/examples/time_members/README.md): the time fields a record carries, with asymmetric freshness bounds
+
+## CI
+
+- [ci.yml](https://github.com/probityai/evidence-starter/blob/main/.github/workflows/ci.yml): the fresh install, the locked set, and the conformance corpus replayed against the pinned reference verifier
+- [Vectors CI guide](https://github.com/probityai/agent-evidence-vectors/blob/main/docs/guides/runner.md): the conformance Action's inputs, outputs and report

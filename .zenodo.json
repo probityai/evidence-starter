@@ -1,0 +1,26 @@
+{
+  "title": "evidence-starter: a template that checks a claim about a retained, signed agent action offline",
+  "upload_type": "software",
+  "license": "Apache-2.0",
+  "creators": [
+    {
+      "name": "Gilda, Sankalp",
+      "orcid": "0000-0002-3645-4501"
+    }
+  ],
+  "description": "<p>A template project that records a signed agent action, keeps the retained bytes, and checks a claim about the action offline with pinned verifiers. Its CI replays the agent-evidence-vectors conformance corpus against the reference verifier pinned in tools/go.mod.</p>",
+  "keywords": [
+    "agent evidence",
+    "verification",
+    "signed records",
+    "template",
+    "agentic systems"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/probityai/evidence-starter",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

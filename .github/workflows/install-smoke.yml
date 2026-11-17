@@ -1,0 +1,85 @@
+name: install-smoke
+
+# Installs the template the way its README tells a user to, with pip and no lock file, so every
+# transitive dependency resolves to the newest version its specifier allows, then runs the
+# example and the tests. ci.yml's `lock` job tests the hash-locked set in uv.lock; this one
+# tests what a fresh install gets tonight. An upstream release can break that with no commit
+# here, so the nightly schedule is the main trigger; a push to main that changes what is
+# installed runs it too. It never runs on a pull request: CI here runs once per batch.
+
+on:
+  schedule:
+    # Off the hour: GitHub delays, and can drop, scheduled runs queued at the top of an hour.
+    - cron: "37 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - "src/**"
+      - ".github/workflows/install-smoke.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # A cancelled nightly run notifies nobody and skips that night's check.
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
+jobs:
+  install:
+    name: fresh install (Python ${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest Python requires-python allows and the newest released one.
+        python: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install as the README says, with no lock file
+        run: python -m pip install --disable-pip-version-check ".[test]"
+      # Printed first, so a failure says from the log alone which versions resolved.
+      - name: Record what resolved
+        run: python -m pip list
+      - name: The example prints supported
+        run: |
+          set -euo pipefail
+          evidence-starter "$RUNNER_TEMP/run" | tee "$RUNNER_TEMP/out.txt"
+          grep -q '^decision: supported ' "$RUNNER_TEMP/out.txt"
+      - name: The tests pass
+        run: python -m pytest -q
+
+  # A nightly failure would otherwise reach only whoever last edited the cron line. Keep one
+  # open issue instead, found by listing open issues (the search index lags a new issue).
+  report-failure:
+    needs: install
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Open or update the tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="Nightly install smoke test is failing"
+          existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100" \
+            --jq ".[] | select(.pull_request == null and .title == \"$title\") | .number" | head -n 1)
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" -R "$GITHUB_REPOSITORY" --body "Still failing: $RUN_URL"
+          else
+            gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "A fresh pip install of this template, with no lock file, failed: $RUN_URL. The \"Record what resolved\" step lists the versions it got; an upstream release usually caused it."
+          fi

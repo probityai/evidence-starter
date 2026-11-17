@@ -9,7 +9,9 @@ multi-ecosystem-groups:
       interval: weekly
 
 updates:
-  - package-ecosystem: pip
+  # uv, not pip: it moves the pyproject pins and uv.lock together, so `uv lock --check`
+  # in ci.yml stays green on the bump.
+  - package-ecosystem: uv
     directory: /
     patterns: ["*"]
     multi-ecosystem-group: pins

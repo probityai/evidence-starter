@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: >-
+  evidence-starter: a template that checks a claim about a retained, signed agent action offline
+message: >-
+  If you use this software, cite it as below, with the commit you ran.
+type: software
+authors:
+  - family-names: Gilda
+    given-names: Sankalp
+    email: sankalp.gilda@gmail.com
+    orcid: 'https://orcid.org/0000-0002-3645-4501'
+repository-code: https://github.com/probityai/evidence-starter
+abstract: >-
+  A template project that records a signed agent action, keeps the retained bytes, and checks a claim about the action offline with pinned verifiers, with the conformance Action already in CI.
+keywords:
+  - agent evidence
+  - verification
+  - signed records
+  - template
+  - agentic systems
+license: Apache-2.0
+version: 0.1.0
