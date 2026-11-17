@@ -29,6 +29,7 @@ decision: supported (assertion_matches_authenticated_history)
 | job | what it proves |
 | --- | --- |
 | `demo` | the pins install, the example prints `supported`, the tests pass, and the README stays one screen |
+| `lock` | `uv.lock` matches `pyproject.toml`, and the example and the tests pass on exactly the hash-locked versions it records |
 | `vectors` | builds the reference verifier pinned in [`tools/go.mod`](tools/go.mod) and replays the [agent-evidence-vectors](https://github.com/probityai/agent-evidence-vectors) corpus against it with the project's GitHub Action |
 
 To test a verifier of your own, replace the `verifier:` line in [`ci.yml`](.github/workflows/ci.yml). Dependabot keeps the PyPI pins, the Go pin and the Action pin current, together.
