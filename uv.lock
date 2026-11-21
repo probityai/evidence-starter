@@ -17,25 +17,25 @@ wheels = [
 
 [[package]]
 name = "agent-evidence-vectors"
-version = "0.37.0"
+version = "0.37.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ce/12/8d8c1d8564d0d64563fc1d13e46b23ea3c9a3892eaf28366d0fe199e63d6/agent_evidence_vectors-0.37.0.tar.gz", hash = "sha256:245591b9b0e98f9d32d4eb80efadf492fd902399223f89b53c7023308db21f47", size = 4575747, upload-time = "2026-11-15T23:03:01.62Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/1e/e7c70a6b985dedd0bb1a12d50bb70ca1b3e6b8b1ff634415b036648dd415/agent_evidence_vectors-0.37.1.tar.gz", hash = "sha256:2325c4a90650fd59282422c274edeb46b9755636b74f7d0007d61a6ae0c9b09d", size = 4577880, upload-time = "2026-11-19T04:20:04.517Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/97/44bf8002166e343b23268a1c0fb9629a9e99841dddb209014f5834b418d6/agent_evidence_vectors-0.37.0-py3-none-any.whl", hash = "sha256:0cb4e7219db714a0035a7481396f3967a0c8fb79ad67a47b8727039819b3c00f", size = 12424052, upload-time = "2026-11-15T23:02:59.01Z" },
+    { url = "https://files.pythonhosted.org/packages/00/6f/c7b59156af511b177a2491683847d729bf42fa2bbe1f54603de896d2bc17/agent_evidence_vectors-0.37.1-py3-none-any.whl", hash = "sha256:d3ffb30aee82cec5334ea1db2dac723e3042ad20e005dcaaa17074f5824a24b6", size = 12424833, upload-time = "2026-11-19T04:20:01.681Z" },
 ]
 
 [[package]]
 name = "agent-evidence-verify"
-version = "0.5.1"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agent-evidence-vocabulary" },
     { name = "cryptography" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/1b/546cf0bcd2e67bf213e625bb147d580cfef296f4ba5268482c1fe666378b/agent_evidence_verify-0.5.1.tar.gz", hash = "sha256:c12710089e6abc559ca79b8c15e3b2982f368ec5392d66dd1dd00d835aabf3ec", size = 968813, upload-time = "2026-11-07T12:47:42.023Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/22/59daf18f26053565e85556474e5535c36468f81f445c5c656c33241f7605/agent_evidence_verify-0.8.0.tar.gz", hash = "sha256:770356bd129cb0e5aae7533b7dbce92f7563f613863ba1468abaa2c72be8bdf0", size = 1223548, upload-time = "2026-11-21T17:11:31.015Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/20/c4/525072fbac020fa70218874ae15ae8f4dff199d1a1e08ca6db9b25603a67/agent_evidence_verify-0.5.1-py3-none-any.whl", hash = "sha256:373342b9dfb7b32d1779ff2cdf4a27ade981fead9393b75a88ffbd1f729a7284", size = 175451, upload-time = "2026-11-07T12:47:40.466Z" },
+    { url = "https://files.pythonhosted.org/packages/16/9b/1c717b5c1d61c0a1c024902261deb576e2127ab278e01c50fbe1344a6d19/agent_evidence_verify-0.8.0-py3-none-any.whl", hash = "sha256:4011dca19786f05ee0a79f36660cc0dbb5d1d5b6e845e21216b9d8485081a1f5", size = 277059, upload-time = "2026-11-21T17:11:29.891Z" },
 ]
 
 [[package]]
@@ -224,8 +224,8 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "agent-evidence-observer", specifier = "==0.2.0" },
-    { name = "agent-evidence-vectors", specifier = "==0.37.0" },
-    { name = "agent-evidence-verify", specifier = "==0.5.1" },
+    { name = "agent-evidence-vectors", specifier = "==0.37.1" },
+    { name = "agent-evidence-verify", specifier = "==0.8.0" },
     { name = "cryptography", specifier = "==50.0.2" },
     { name = "pytest", marker = "extra == 'test'", specifier = "==9.2.0" },
     { name = "pyyaml", marker = "extra == 'test'", specifier = "==6.0.3" },

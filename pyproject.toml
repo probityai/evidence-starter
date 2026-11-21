@@ -7,8 +7,8 @@ license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
     "agent-evidence-observer==0.2.0",
-    "agent-evidence-vectors==0.37.0",
-    "agent-evidence-verify==0.5.1",
+    "agent-evidence-vectors==0.37.1",
+    "agent-evidence-verify==0.8.0",
     "cryptography==50.0.2",
 ]
 
